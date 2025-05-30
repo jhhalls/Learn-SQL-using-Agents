@@ -1,0 +1,107 @@
+# --------------------
+# ENVIRONMENT
+# --------------------
+.env
+.env.*          # .env.dev, .env.local, etc.
+*.secret
+
+# --------------------
+# PYTHON
+# --------------------
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+.eggs/
+dist/
+build/
+*.manifest
+*.spec
+
+# --------------------
+# VIRTUAL ENVIRONMENTS
+# --------------------
+venv/
+env/
+.venv/
+.envrc
+pip-log.txt
+
+# --------------------
+# JUPYTER NOTEBOOKS
+# --------------------
+.ipynb_checkpoints/
+
+# --------------------
+# IDEs
+# --------------------
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# --------------------
+# OS FILES
+# --------------------
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# --------------------
+# LOGS & TEMP
+# --------------------
+*.log
+*.tmp
+*.bak
+*.orig
+
+# --------------------
+# TESTS & COVERAGE
+# --------------------
+.coverage
+.cache/
+pytest_cache/
+htmlcov/
+
+# --------------------
+# DATA FILES (OPTIONAL)
+# --------------------
+*.csv
+*.tsv
+*.parquet
+*.db
+*.sqlite
+*.h5
+*.hdf5
+*.zip
+*.tar
+*.tar.gz
+*.npy
+*.pkl
+*.joblib
+
+# Uncomment if you want to ignore all data files
+# data/
+
+# --------------------
+# MODEL FILES (OPTIONAL)
+# --------------------
+*.pt
+*.pth
+*.h5
+*.onnx
+*.tflite
+*.sav
+*.pb
+
+# --------------------
+# SECURITY
+# --------------------
+*.key
+*.crt
+*.pem
+*.pfx
+*.cer
