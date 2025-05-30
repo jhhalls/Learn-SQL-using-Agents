@@ -1,8 +1,8 @@
-from sql_agent.connection import get_schema_info
-from sql_agent.services.llm_query_generator import generate_sql
-from sql_agent.services.query_executor_validator import validate_sql, execute_sql
-from sql_agent.services.llm_query_generator import explain_sql_query
-from sql_agent.connection import engine
+from connection import get_schema_info
+from services.llm_query_generator import generate_sql
+from services.query_executor_validator import validate_sql, execute_sql
+from services.llm_query_generator import explain_sql_query
+from connection import engine
 from dotenv import load_dotenv
 load_dotenv()
 

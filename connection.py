@@ -1,6 +1,6 @@
 from sqlalchemy import create_engine, MetaData
 from sqlalchemy.exc import OperationalError
-from sql_agent.config import db_config 
+from config import db_config 
 
 # Format for MySQL connection string:
 # mysql+pymysql://<username>:<password>@<host>/<database>

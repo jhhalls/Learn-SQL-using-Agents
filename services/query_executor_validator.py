@@ -1,7 +1,7 @@
 import sqlparse
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
-from sql_agent.connection import engine
+from connection import engine
 
 # def validate_sql(sql_query):
 #     # Simple validation to ensure it's a SELECT query and prevent any DDL commands
