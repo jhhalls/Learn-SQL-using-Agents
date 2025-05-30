@@ -1,0 +1,6 @@
+openai
+sqlalchemy
+sqlparse
+pymysql
+python-dotenv
+groq
