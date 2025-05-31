@@ -3,15 +3,6 @@ from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 from connection import engine
 
-# def validate_sql(sql_query):
-#     # Simple validation to ensure it's a SELECT query and prevent any DDL commands
-#     parsed = sqlparse.parse(sql_query)
-#     for stmt in parsed:
-#         if stmt.get_type() != 'SELECT':
-#             raise ValueError("Only SELECT queries are allowed!")
-#     return sql_query
-
-
 def validate_sql(sql_query):
     sql_query = sql_query.strip()  # Remove leading/trailing spaces
     parsed = sqlparse.parse(sql_query)
