@@ -4,6 +4,7 @@ import pandas as pd
 from typing import Dict, List, Optional, Tuple, Any
 import sqlite3  # Replace with your database connector
 from openai import OpenAI  # Assuming OpenAI for LLM integration
+from validation.validation import validate_full_name_usage
 
 class SQLAgent:
     def __init__(self, db_connection, llm_client, schema_info: Dict):
@@ -18,6 +19,49 @@ class SQLAgent:
         self.db = db_connection
         self.llm = llm_client
         self.schema = schema_info
+        
+    # def process_query(self, natural_language_query: str) -> Dict:
+    #     """
+    #     Main workflow for processing a natural language query
+    #     """
+    #     # Step 1: Schema Reference & Validation
+    #     schema_context = self._get_relevant_schema(natural_language_query)
+    #     if not schema_context["valid"]:
+    #         return {"success": False, "stage": "schema_validation", "error": schema_context["error"]}
+        
+    #     # Step 2: SQL Query Generation
+    #     sql_query = self._generate_sql_query(natural_language_query, schema_context["schema"])
+        
+    #     # Step 3: SQL Syntax Validation
+    #     syntax_validation = self._validate_sql_syntax(sql_query)
+    #     if not syntax_validation["valid"]:
+    #         return {"success": False, "stage": "syntax_validation", "error": syntax_validation["error"]}
+        
+    #     # Step 4: Intent Validation
+    #     intent_validation = self._validate_intent(natural_language_query, sql_query)
+    #     if not intent_validation["valid"]:
+    #         return {"success": False, "stage": "intent_validation", "error": intent_validation["error"]}
+        
+    #     # Step 5: SQL Execution
+    #     execution_result = self._execute_sql(sql_query)
+    #     if not execution_result["success"]:
+    #         return {"success": False, "stage": "execution", "error": execution_result["error"]}
+        
+    #     # Step 6: Results Validation
+    #     results_validation = self._validate_results(natural_language_query, execution_result["results"])
+    #     if not results_validation["valid"]:
+    #         return {
+    #             "success": False, 
+    #             "stage": "results_validation", 
+    #             "error": results_validation["error"],
+    #             "suggestion": self._suggest_fix(results_validation["error_type"], sql_query, natural_language_query)
+    #         }
+        
+    #     return {
+    #         "success": True,
+    #         "query": sql_query,
+    #         "results": execution_result["results"]
+    #     }
         
     def process_query(self, natural_language_query: str) -> Dict:
         """
@@ -36,17 +80,27 @@ class SQLAgent:
         if not syntax_validation["valid"]:
             return {"success": False, "stage": "syntax_validation", "error": syntax_validation["error"]}
         
-        # Step 4: Intent Validation
+        # Step 4: Full Name Validation
+        try:
+            validate_full_name_usage(sql_query)
+        except ValueError as e:
+            return {
+                "success": False,
+                "stage": "full_name_validation",
+                "error": str(e)
+            }
+
+        # Step 5: Intent Validation
         intent_validation = self._validate_intent(natural_language_query, sql_query)
         if not intent_validation["valid"]:
             return {"success": False, "stage": "intent_validation", "error": intent_validation["error"]}
         
-        # Step 5: SQL Execution
+        # Step 6: SQL Execution
         execution_result = self._execute_sql(sql_query)
         if not execution_result["success"]:
             return {"success": False, "stage": "execution", "error": execution_result["error"]}
         
-        # Step 6: Results Validation
+        # Step 7: Results Validation
         results_validation = self._validate_results(natural_language_query, execution_result["results"])
         if not results_validation["valid"]:
             return {
@@ -61,7 +115,7 @@ class SQLAgent:
             "query": sql_query,
             "results": execution_result["results"]
         }
-    
+        
     def _get_relevant_schema(self, query: str) -> Dict:
         """
         Extract relevant schema information based on the natural language query
@@ -123,28 +177,55 @@ class SQLAgent:
             return {"valid": False, "error": f"Unknown entities in query: {', '.join(missing_entities)}"}
         return {"valid": True}
     
+    # def _generate_sql_query(self, query: str, schema_context: str) -> str:
+    #     """Generate SQL query from natural language using LLM"""
+    #     prompt = f"""
+    #     Given the following database schema:
+    #     {schema_context}
+        
+    #     Transform this natural language query into SQL:
+    #     "{query}"
+        
+    #     Return only the SQL query without any explanation.
+    #     """
+        
+    #     response = self.llm.chat.completions.create(
+    #         model="gpt-4",
+    #         messages=[{"role": "user", "content": prompt}]
+    #     )
+        
+    #     sql_query = response.choices[0].message.content.strip()
+    #     # Remove markdown code blocks if present
+    #     sql_query = re.sub(r'```sql|```', '', sql_query).strip()
+        
+    #     return sql_query
+
     def _generate_sql_query(self, query: str, schema_context: str) -> str:
         """Generate SQL query from natural language using LLM"""
+
         prompt = f"""
-        Given the following database schema:
+        You are an expert SQL developer. Given the following database schema:
         {schema_context}
         
-        Transform this natural language query into SQL:
+        Transform the following natural language query into SQL:
         "{query}"
         
-        Return only the SQL query without any explanation.
+        - Strictly ensure, If the query involves displaying a person's name, return the full name as a single column by concatenating first and last names (e.g., `CONCAT(first_name, ' ', last_name) AS full_name`).
+        - Return only the SQL query without any explanation.
+        - Do not wrap the SQL in markdown or backticks.
         """
-        
+
         response = self.llm.chat.completions.create(
             model="gpt-4",
             messages=[{"role": "user", "content": prompt}]
         )
-        
+
         sql_query = response.choices[0].message.content.strip()
-        # Remove markdown code blocks if present
+        # Just in case LLM still wraps it, remove markdown code blocks
         sql_query = re.sub(r'```sql|```', '', sql_query).strip()
-        
+
         return sql_query
+    
     
     def _validate_sql_syntax(self, sql_query: str) -> Dict:
         """Validate SQL syntax"""
